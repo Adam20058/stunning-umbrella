@@ -32,11 +32,11 @@ function loadPredictions() {
 function filterPrediction(prediction) {
   switch(currentFilter) {
     case 'pending':
-      return !prediction.verified && !prediction.incorrect;
+      return prediction.status === 'pending';
     case 'verified':
-      return prediction.verified;
+      return prediction.status === 'verified';
     case 'incorrect':
-      return prediction.incorrect;
+      return prediction.status === 'incorrect';
     default:
       return true;
   }
@@ -50,7 +50,7 @@ function renderPredictions(predictions) {
     container.innerHTML = `
       <div class="empty-state">
         <p>No predictions found${currentFilter !== 'all' ? ' for selected filter' : ''}.</p>
-        <p>Click "Track" on LinkedIn comments to start tracking predictions.</p>
+        <p>Click "Track" on LinkedIn posts to start tracking predictions.</p>
       </div>
     `;
     return;
@@ -66,8 +66,6 @@ function createPredictionCard(prediction) {
   card.className = 'prediction-card';
   
   const date = new Date(prediction.timestamp || prediction.capturedAt);
-  const deadlineDate = prediction.deadline ? new Date(prediction.deadline) : null;
-  const isOverdue = deadlineDate && deadlineDate < new Date();
   
   card.innerHTML = `
     <div class="prediction-header">
@@ -75,18 +73,13 @@ function createPredictionCard(prediction) {
       <span class="timestamp">${date.toLocaleDateString()}</span>
     </div>
     <div class="prediction-text">${prediction.text}</div>
-    ${deadlineDate ? `
-      <div class="deadline ${isOverdue ? 'deadline-warning' : ''}">
-        <span>📅 Due: ${deadlineDate.toLocaleDateString()}</span>
-      </div>
-    ` : ''}
     <div class="actions">
-      <button class="action-btn ${prediction.verified ? 'verified' : ''}" 
-        onclick="updatePrediction('${prediction.id}', 'verified')">
+      <button class="action-btn ${prediction.status === 'verified' ? 'verified' : ''}" 
+        onclick="updatePredictionStatus('${prediction.id}', 'verified')">
         ✓ Verified
       </button>
-      <button class="action-btn ${prediction.incorrect ? 'incorrect' : ''}"
-        onclick="updatePrediction('${prediction.id}', 'incorrect')">
+      <button class="action-btn ${prediction.status === 'incorrect' ? 'incorrect' : ''}"
+        onclick="updatePredictionStatus('${prediction.id}', 'incorrect')">
         ✗ Incorrect
       </button>
       <button class="action-btn" onclick="openLinkedIn('${prediction.url}')">
@@ -101,20 +94,23 @@ function createPredictionCard(prediction) {
   return card;
 }
 
-function updatePrediction(id, status) {
+function updatePredictionStatus(id, status) {
   chrome.storage.local.get(id, (result) => {
     const prediction = result[id];
-    prediction.verified = status === 'verified';
-    prediction.incorrect = status === 'incorrect';
-    prediction.verifiedAt = new Date().toISOString();
-    
-    chrome.storage.local.set({ [id]: prediction }, loadPredictions);
+    if (prediction) {
+      prediction.status = status;
+      chrome.storage.local.set({ [id]: prediction }, () => {
+        loadPredictions();
+      });
+    }
   });
 }
 
 function deletePrediction(id) {
   if (confirm('Delete this prediction?')) {
-    chrome.storage.local.remove(id, loadPredictions);
+    chrome.storage.local.remove(id, () => {
+      loadPredictions();
+    });
   }
 }
 
@@ -123,6 +119,6 @@ function openLinkedIn(url) {
 }
 
 // Export functions for global access
-window.updatePrediction = updatePrediction;
+window.updatePredictionStatus = updatePredictionStatus;
 window.deletePrediction = deletePrediction;
 window.openLinkedIn = openLinkedIn;
