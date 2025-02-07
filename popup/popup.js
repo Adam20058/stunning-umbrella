@@ -1,4 +1,3 @@
-// Prediction list management
 let currentFilter = 'all';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -57,7 +56,8 @@ function renderPredictions(predictions) {
   }
 
   predictions.forEach(prediction => {
-    container.appendChild(createPredictionCard(prediction));
+    const card = createPredictionCard(prediction);
+    container.appendChild(card);
   });
 }
 
@@ -74,22 +74,39 @@ function createPredictionCard(prediction) {
     </div>
     <div class="prediction-text">${prediction.text}</div>
     <div class="actions">
-      <button class="action-btn ${prediction.status === 'verified' ? 'verified' : ''}" 
-        onclick="updatePredictionStatus('${prediction.id}', 'verified')">
+      <button class="action-btn verify-btn ${prediction.status === 'verified' ? 'verified' : ''}" data-id="${prediction.id}">
         ✓ Verified
       </button>
-      <button class="action-btn ${prediction.status === 'incorrect' ? 'incorrect' : ''}"
-        onclick="updatePredictionStatus('${prediction.id}', 'incorrect')">
+      <button class="action-btn incorrect-btn ${prediction.status === 'incorrect' ? 'incorrect' : ''}" data-id="${prediction.id}">
         ✗ Incorrect
       </button>
-      <button class="action-btn" onclick="openLinkedIn('${prediction.url}')">
+      <button class="action-btn view-btn" data-url="${prediction.url}">
         View on LinkedIn
       </button>
-      <button class="action-btn" onclick="deletePrediction('${prediction.id}')">
+      <button class="action-btn delete-btn" data-id="${prediction.id}">
         🗑️ Delete
       </button>
     </div>
   `;
+
+  // Add event listeners
+  card.querySelector('.verify-btn').addEventListener('click', () => {
+    updatePredictionStatus(prediction.id, 'verified');
+  });
+
+  card.querySelector('.incorrect-btn').addEventListener('click', () => {
+    updatePredictionStatus(prediction.id, 'incorrect');
+  });
+
+  card.querySelector('.view-btn').addEventListener('click', () => {
+    chrome.tabs.create({ url: prediction.url });
+  });
+
+  card.querySelector('.delete-btn').addEventListener('click', () => {
+    if (confirm('Delete this prediction?')) {
+      deletePrediction(prediction.id);
+    }
+  });
   
   return card;
 }
@@ -107,18 +124,7 @@ function updatePredictionStatus(id, status) {
 }
 
 function deletePrediction(id) {
-  if (confirm('Delete this prediction?')) {
-    chrome.storage.local.remove(id, () => {
-      loadPredictions();
-    });
-  }
+  chrome.storage.local.remove(id, () => {
+    loadPredictions();
+  });
 }
-
-function openLinkedIn(url) {
-  chrome.tabs.create({ url });
-}
-
-// Export functions for global access
-window.updatePredictionStatus = updatePredictionStatus;
-window.deletePrediction = deletePrediction;
-window.openLinkedIn = openLinkedIn;
