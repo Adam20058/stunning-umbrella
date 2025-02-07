@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 400px;
+      padding: 16px;
+      font-family: -apple-system, system-ui, BlinkMacSystemFont;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 18px;
+      color: #0a66c2;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .filter-btn {
+      padding: 4px 12px;
+      border-radius: 16px;
+      border: 1px solid #0a66c2;
+      background: white;
+      color: #0a66c2;
+      cursor: pointer;
+    }
+
+    .filter-btn.active {
+      background: #0a66c2;
+      color: white;
+    }
+    
+    .prediction-card {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: white;
+    }
+    
+    .prediction-card:hover {
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .prediction-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    
+    .author {
+      font-weight: 600;
+      color: #0a66c2;
+    }
+    
+    .timestamp {
+      color: #666;
+      font-size: 12px;
+    }
+    
+    .prediction-text {
+      margin-bottom: 8px;
+      line-height: 1.4;
+      color: #333;
+    }
+    
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .action-btn {
+      padding: 6px 12px;
+      border-radius: 16px;
+      border: 1px solid #0a66c2;
+      background: white;
+      color: #0a66c2;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    
+    .action-btn:hover {
+      background: #f3f6f8;
+    }
+    
+    .verified {
+      background: #dcf5dc;
+      border-color: #057505;
+      color: #057505;
+    }
+    
+    .incorrect {
+      background: #ffdede;
+      border-color: #d11919;
+      color: #d11919;
+    }
+    
+    .empty-state {
+      text-align: center;
+      color: #666;
+      padding: 32px 16px;
+      background: #f3f6f8;
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+
+    .deadline {
+      font-size: 12px;
+      color: #666;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .deadline-warning {
+      color: #d11919;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>LinkedIn Prediction Tracker</h1>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="pending">Pending</button>
+    <button class="filter-btn" data-filter="verified">Verified</button>
+    <button class="filter-btn" data-filter="incorrect">Incorrect</button>
+  </div>
+
+  <div id="predictions-list"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
